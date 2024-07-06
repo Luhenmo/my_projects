@@ -21,7 +21,7 @@ def get_bond_value(bond_name:str)->float:
 
 def get_b3_stock_value(stock_name:str)->float:
 
-    now = date.today()
+    now = datetime.today()
     earlier = now - timedelta(days=1)
     value = yf.Ticker(stock_name).history(start=earlier,end=now)[["Close"]]
     value = float(*value["Close"].values)
@@ -32,7 +32,7 @@ def get_us_stock_value(
         output_currency:str="BRL",
     )->float:
 
-    now = date.today()
+    now = datetime.today()
     earlier = now - timedelta(days=1)
     value = yf.Ticker(stock_name).history(start=earlier,end=now)[["Close"]]
     value = float(*value["Close"].values)
