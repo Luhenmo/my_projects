@@ -6,20 +6,33 @@ import numpy as np
 import yfinance as yf
 import requests
 from asset_database import DICT_ASSET_INFO
+from historico_tesouro.tresury_history import DICT_TRESURY_HISTORY
 
 dict_asset = DICT_ASSET_INFO
 
-def get_bond_value(bond_name:str)->float:
+def get_bond_value(
+    bond_name:str,
+    date:datetime,
+    )->float:
 
-    bond_name = ("Tesouro"+bond_name).lower().replace(" ","")
-    # Define the URL
-    url = "https://www.tesourodireto.com.br/json/br/com/b3/tesourodireto/service/api/treasurybondsinfo.json"
-    response = requests.get(url)
-    for _dict in response.json()["response"]["TrsrBdTradgList"]:
-        if _dict["TrsrBd"]["nm"].lower().replace(" ","") == bond_name:
-            return float(_dict["TrsrBd"]["untrRedVal"])
+    if date == datetime.today():
+        bond_name = ("Tesouro"+bond_name).lower().replace(" ","")
+        # Define the URL
+        url = "https://www.tesourodireto.com.br/json/br/com/b3/tesourodireto/service/api/treasurybondsinfo.json"
+        response = requests.get(url)
+        for _dict in response.json()["response"]["TrsrBdTradgList"]:
+            if _dict["TrsrBd"]["nm"].lower().replace(" ","") == bond_name:
+                return float(_dict["TrsrBd"]["untrRedVal"])
+    else:
+        return float(
+            DICT_TRESURY_HISTORY[bond_name][
+                DICT_TRESURY_HISTORY[bond_name]["Dia"] < date
+            ].sort_values(by="Dia",ascending=False)["Preço"].iloc[0])
 
-def get_b3_stock_value(stock_name:str)->float:
+def get_b3_stock_value(
+    stock_name:str,
+    date,
+    )->float:
 
     now = datetime.today()
     earlier = now - timedelta(days=1)
@@ -43,13 +56,16 @@ def get_us_stock_value(
         value = value * usd_brl
     return np.round(value,2)
 
-def get_value(asset_name:str)->float:
+def get_value(
+    asset_name:str,
+    date:datetime=datetime.today(),
+    )->float:
     if dict_asset[asset_name].stock_b3:
         return get_b3_stock_value(dict_asset[asset_name].ticker)
     if dict_asset[asset_name].stock_us:
         return get_us_stock_value(dict_asset[asset_name].ticker)
     if dict_asset[asset_name].bond:
-        return get_bond_value(dict_asset[asset_name].ticker)
+        return get_bond_value(dict_asset[asset_name].ticker,date)
 
 
 

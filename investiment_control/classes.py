@@ -12,7 +12,6 @@ class Portfolio:
     data_base:pd.DataFrame
 
     def __post_init__(self):
-        self.data_base = self.process_data(self.data)
         self.data_base["class"] = [DICT_ASSET_INFO[ticker].asset_class for ticker in self.data_base["ticker"]]
 
     def compute_position(            
