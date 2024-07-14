@@ -17,6 +17,7 @@ data_base["ticker"] = raw_data["Nome ativo"]
 data_base["buy"] = raw_data["C/V"].apply(lambda text: True if text=="C" else False)
 data_base["price"] = raw_data["Preço operação"].apply(lambda price_text: float(''.join(filter(lambda x: x.isdigit() or x in ',', price_text)).replace(",",".")))
 data_base["amount"] = raw_data["Qnt"].apply(lambda Qnt: float(Qnt.replace(",",".")))
+data_base["curency"] = "BRL"
 
 #### Add more ransactions using 
 

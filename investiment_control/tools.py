@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt 
 from datetime import datetime,timedelta
-from datetime import date
+from dateutil.relativedelta import relativedelta
 import pandas as pd
 import numpy as np
 import yfinance as yf
@@ -36,6 +36,10 @@ def get_b3_stock_value(
 
     earlier = date - timedelta(days=7)
     value = yf.Ticker(stock_name).history(start=earlier,end=date)[["Close"]]
+    while np.size(value) == 0:
+        date = date + timedelta(days=7)
+        earlier = date - timedelta(days=7)
+        value = yf.Ticker(stock_name).history(start=earlier,end=date)[["Close"]]
     value = value.sort_index(ascending=False).iloc[0].values[0]
     return np.round(value,2)
 
@@ -47,6 +51,10 @@ def get_us_stock_value(
 
     earlier = date - timedelta(days=7)
     value = yf.Ticker(stock_name).history(start=earlier,end=date)[["Close"]]
+    while np.size(value) == 0:
+        date = date + timedelta(days=7)
+        earlier = date - timedelta(days=7)
+        value = yf.Ticker(stock_name).history(start=earlier,end=date)[["Close"]]
     value = value.sort_index(ascending=False).iloc[0].values[0]
 
     if output_currency == "BRL":
@@ -73,6 +81,8 @@ def get_position(
     )->tuple[float,float,float]:
 
     operation = data_base[(data_base["ticker"] == ticker) & (data_base["date"] <= date)]
+    if np.size(operation) == 0:
+        return 0,0,0
 
     is_first = True
     for index in operation.sort_values("date").index:
@@ -211,3 +221,75 @@ def plot_actual_postion(position)->None:
     plt.title('Assets distribution')
     plt.show()
 
+def plot_earnings_in_last_months(
+        data_base:pd.DataFrame,
+        delta_months:int,
+    )->None:
+    list_dates = [
+        datetime(2024,datetime.today().month,1) - relativedelta(months=delta_months-i-1)
+        for i in range(delta_months)]
+    dict_positions = {
+        date:compute_position(data_base,date=date)[0] for date in list_dates
+    }
+
+    dict_positions.update({datetime.today():compute_position(data_base)[0]})
+
+    class_colors = {
+        "total":"y",
+        'USD':'r',
+        'Tesouro':'g',
+        'Ação': 'b',
+        'FII': 'm',
+    }
+
+    month_names = {
+        1:'Jan', 
+        2:'Feb', 
+        3:'Mar', 
+        4:'Apr', 
+        5:'May', 
+        6:'Jun', 
+        7:'Jul', 
+        8:'Aug', 
+        9:'Sep', 
+        10:'Oct', 
+        11:'Nov', 
+        12:'Dec',
+    }
+
+    bar_width = 0.18
+    x = np.arange(len(list_dates))
+
+    # Create the plot
+    fig, ax = plt.subplots()
+
+    for i,_class in enumerate(class_colors.keys()):
+        if _class == "total":
+            total_per_month = [dict_positions[date]["Total price"].sum() for date in dict_positions.keys()]     
+            earnings_per_month = [total_per_month[i+1] - total_per_month[i] for i in range(len(total_per_month)-1)]
+        else:
+            total_per_month = [dict_positions[date][dict_positions[date]["Class"] == _class]["Total price"].sum() for date in dict_positions.keys()] 
+            earnings_per_month = [total_per_month[i+1] - total_per_month[i] for i in range(len(total_per_month)-1)]
+
+        bars = ax.bar(
+            x + i * bar_width,
+            earnings_per_month, 
+            color=[class_colors[_class] for x in earnings_per_month],
+            width=bar_width,
+            label=f"{_class}"
+        )
+
+    # Draw a central line at y=0
+    ax.axhline(0, color='black', linewidth=0.8)
+
+    # Add labels and title
+    ax.set_xticks(x + bar_width * (len(class_colors) - 1) / 2)
+    ax.set_xticklabels([month_names[month_num.month] for month_num in list_dates])
+    ax.set_ylabel('Earnings/Losses (BRL)')
+    ax.set_xlabel('Month')
+    ax.set_title(f'Monthly changes in the last {delta_months} months')
+    ax.legend()
+    ax.grid(True, which='both', linestyle='--', linewidth=0.5)
+
+    # Show the plot
+    plt.show()
