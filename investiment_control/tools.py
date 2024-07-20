@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt 
-from datetime import datetime,timedelta
 from dateutil.relativedelta import relativedelta
 import pandas as pd
 import numpy as np
@@ -12,10 +11,10 @@ dict_asset = DICT_ASSET_INFO
 
 def get_bond_value(
     bond_name:str,
-    date:datetime,
+    date:pd.Timestamp,
     )->float:
 
-    if date == datetime.today():
+    if date == pd.Timestamp.today():
         bond_name = ("Tesouro"+bond_name).lower().replace(" ","")
         # Define the URL
         url = "https://www.tesourodireto.com.br/json/br/com/b3/tesourodireto/service/api/treasurybondsinfo.json"
@@ -31,29 +30,29 @@ def get_bond_value(
 
 def get_b3_stock_value(
     stock_name:str,
-    date:datetime,
+    date:pd.Timestamp,
     )->float:
 
-    earlier = date - timedelta(days=7)
+    earlier = date - pd.Timedelta(days=7)
     value = yf.Ticker(stock_name).history(start=earlier,end=date)[["Close"]]
     while np.size(value) == 0:
-        date = date + timedelta(days=7)
-        earlier = date - timedelta(days=7)
+        date = date + pd.Timedelta(days=7)
+        earlier = date - pd.Timedelta(days=7)
         value = yf.Ticker(stock_name).history(start=earlier,end=date)[["Close"]]
     value = value.sort_index(ascending=False).iloc[0].values[0]
     return np.round(value,2)
 
 def get_us_stock_value(
         stock_name:str,
-        date:datetime,
+        date:pd.Timestamp,
         output_currency:str="BRL",
     )->float:
 
-    earlier = date - timedelta(days=7)
+    earlier = date - pd.Timedelta(days=7)
     value = yf.Ticker(stock_name).history(start=earlier,end=date)[["Close"]]
     while np.size(value) == 0:
-        date = date + timedelta(days=7)
-        earlier = date - timedelta(days=7)
+        date = date + pd.Timedelta(days=7)
+        earlier = date - pd.Timedelta(days=7)
         value = yf.Ticker(stock_name).history(start=earlier,end=date)[["Close"]]
     value = value.sort_index(ascending=False).iloc[0].values[0]
 
@@ -65,7 +64,7 @@ def get_us_stock_value(
 
 def get_value(
     asset_name:str,
-    date:datetime=datetime.today(),
+    date:pd.Timestamp=pd.Timestamp.today(),
     )->float:
     if dict_asset[asset_name].stock_b3:
         return get_b3_stock_value(dict_asset[asset_name].ticker,date)
@@ -77,7 +76,7 @@ def get_value(
 def get_position(
         data_base:pd.DataFrame,
         ticker:str,
-        date:datetime=datetime.today(),
+        date:pd.Timestamp=pd.Timestamp.today(),
     )->tuple[float,float,float]:
 
     operation = data_base[(data_base["ticker"] == ticker) & (data_base["date"] <= date)]
@@ -105,7 +104,7 @@ def get_position(
 
 def compute_position(            
     data_base:pd.DataFrame,
-    date:datetime=datetime.today(),
+    date:pd.Timestamp=pd.Timestamp.today(),
     ) -> tuple[pd.DataFrame,pd.DataFrame]:
     
     filtered_data_base = data_base[data_base["date"] <= date]
@@ -226,13 +225,13 @@ def plot_earnings_in_last_months(
         delta_months:int,
     )->None:
     list_dates = [
-        datetime(2024,datetime.today().month,1) - relativedelta(months=delta_months-i-1)
+        pd.Timestamp(2024,pd.Timestamp.today().month,1) - relativedelta(months=delta_months-i-1)
         for i in range(delta_months)]
     dict_positions = {
         date:compute_position(data_base,date=date)[0] for date in list_dates
     }
 
-    dict_positions.update({datetime.today():compute_position(data_base)[0]})
+    dict_positions.update({pd.Timestamp.today():compute_position(data_base)[0]})
 
     class_colors = {
         "total":"y",

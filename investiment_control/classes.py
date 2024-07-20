@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from datetime import datetime
 from asset_database import DICT_ASSET_INFO
 from tools import get_value
 import pandas as pd
@@ -18,7 +17,7 @@ class Portfolio:
 @dataclass
 class Transaction:
     owner:str
-    date:datetime
+    date:pd.Timestamp
     ticker:str
     buy:bool
     price:float
