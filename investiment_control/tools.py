@@ -10,9 +10,40 @@ from asset_database import DICT_ASSET_INFO
 from historico_tesouro.tresury_history import DICT_TRESURY_HISTORY
 # import investiment_control
 
+### global variables ###
 dict_asset = DICT_ASSET_INFO
 PATH_MAIN_FOLDER = Path("c:/Users/luizh/Documentos/visual_studio/my_projects/investiment_control")
 
+class_colors = {
+    "total":("tab:grey",0.5),
+    'USD':'tab:red',
+    'Tesouro':'tab:green',
+    'Ação': 'tab:blue',
+    'FII': 'y',
+}
+
+month_names = {
+    1:'Jan', 
+    2:'Feb', 
+    3:'Mar', 
+    4:'Apr', 
+    5:'May', 
+    6:'Jun', 
+    7:'Jul', 
+    8:'Aug', 
+    9:'Sep', 
+    10:'Oct', 
+    11:'Nov', 
+    12:'Dec',
+}
+
+def generate_list_of_dates(months_amount:int,naive:bool=True):
+    list_dates = [
+        pd.Timestamp(2024,pd.Timestamp.today().month,1,tz=None if naive else 'America/Sao_Paulo')
+        - relativedelta(months=months_amount-i-1) - pd.Timedelta(days=1)
+        for i in range(months_amount)]
+    list_dates.append(pd.Timestamp.today(tz=None if naive else 'America/Sao_Paulo'))
+    return list_dates
 
 def get_bond_value(
     bond_name:str,
@@ -244,43 +275,21 @@ def plot_position(
     plt.show()
 
 def plot_earnings_in_last_months(
-        data_base:pd.DataFrame,
+        portifolio:Portfolio,
         delta_months:int,
+        save_image:bool=False,
     )->None:
-    list_dates = [
-        pd.Timestamp(2024,pd.Timestamp.today().month,1) - relativedelta(months=delta_months-i-1)
-        for i in range(delta_months)]
+
+    data_base = portifolio.data_base
+        
+    list_dates = generate_list_of_dates(delta_months)
+
     dict_positions = {
         date:compute_position(data_base,date=date)[0] for date in list_dates
     }
 
-    dict_positions.update({pd.Timestamp.today():compute_position(data_base)[0]})
-
-    class_colors = {
-        "total":"y",
-        'USD':'r',
-        'Tesouro':'g',
-        'Ação': 'b',
-        'FII': 'm',
-    }
-
-    month_names = {
-        1:'Jan', 
-        2:'Feb', 
-        3:'Mar', 
-        4:'Apr', 
-        5:'May', 
-        6:'Jun', 
-        7:'Jul', 
-        8:'Aug', 
-        9:'Sep', 
-        10:'Oct', 
-        11:'Nov', 
-        12:'Dec',
-    }
-
-    bar_width = 0.18
-    x = np.arange(len(list_dates))
+    bar_width = 0.2
+    x = np.arange(len(list_dates)-1)
 
     # Create the plot
     fig, ax = plt.subplots()
@@ -289,29 +298,125 @@ def plot_earnings_in_last_months(
         if _class == "total":
             total_per_month = [dict_positions[date]["Total price"].sum() for date in dict_positions.keys()]     
             earnings_per_month = [total_per_month[i+1] - total_per_month[i] for i in range(len(total_per_month)-1)]
+
+            bars = ax.bar(
+                x+2*bar_width,
+                earnings_per_month, 
+                color=[class_colors[_class] for x in earnings_per_month],
+                width=4*bar_width,
+                label=f"{_class}"
+            )
+
         else:
             total_per_month = [dict_positions[date][dict_positions[date]["Class"] == _class]["Total price"].sum() for date in dict_positions.keys()] 
             earnings_per_month = [total_per_month[i+1] - total_per_month[i] for i in range(len(total_per_month)-1)]
 
-        bars = ax.bar(
-            x + i * bar_width,
-            earnings_per_month, 
-            color=[class_colors[_class] for x in earnings_per_month],
-            width=bar_width,
-            label=f"{_class}"
-        )
+            bars = ax.bar(
+                x + bar_width/2 + (i-1) * bar_width,
+                earnings_per_month, 
+                color=[class_colors[_class] for x in earnings_per_month],
+                width=bar_width,
+                label=f"{_class}"
+            )
 
     # Draw a central line at y=0
     ax.axhline(0, color='black', linewidth=0.8)
 
     # Add labels and title
     ax.set_xticks(x + bar_width * (len(class_colors) - 1) / 2)
-    ax.set_xticklabels([month_names[month_num.month] for month_num in list_dates])
+    ax.set_xticklabels([month_names[month_num.month] for month_num in list_dates[1:]])
     ax.set_ylabel('Earnings/Losses (BRL)')
     ax.set_xlabel('Month')
-    ax.set_title(f'Monthly changes in the last {delta_months} months')
+    ax.set_title(f'{portifolio.owner} monthly changes in the last {delta_months} months ({pd.Timestamp.today().strftime("%y-%m-%d")})')
     ax.legend()
     ax.grid(True, which='both', linestyle='--', linewidth=0.5)
 
     # Show the plot
+    if save_image:
+        plt.savefig(PATH_MAIN_FOLDER / "images" / f"earning_{portifolio.owner}_{pd.Timestamp.today().strftime("%y-%m-%d")}.png") 
+    plt.show()
+
+def compute_dividends(
+        portifolio:Portfolio,
+    )->pd.DataFrame:
+
+    df = portifolio.data_base[portifolio.data_base["class"] != "Tesouro"]
+    dividens_data_base = pd.DataFrame(columns=["date","ticker","class","dividend","amount","total_dividend"])
+
+    for ticker in df["ticker"].unique():
+
+        dividend_data = yf.Ticker(DICT_ASSET_INFO[ticker].ticker).dividends
+        for dividend_date,dividend in zip(dividend_data.index,dividend_data):
+            date = pd.Timestamp(dividend_date.year,dividend_date.month,dividend_date.day)
+            position_in_date = get_position(
+                data_base=df,
+                ticker=ticker,
+                date=date,
+            )[1]
+            if position_in_date > 0:
+
+                dict_dividend = {
+                    "date":dividend_date,
+                    "ticker":ticker,
+                    "class":DICT_ASSET_INFO[ticker].asset_class,
+                    "dividend":dividend,
+                    "amount":position_in_date,
+                    "total_dividend":position_in_date * dividend,
+                }
+
+                if DICT_ASSET_INFO[ticker].asset_class == "USD":
+
+                    earlier = date - pd.Timedelta(days=7)
+                    usd_brl = yf.Ticker("BRL%3DX").history(start=earlier,end=date)[["Close"]]
+                    usd_brl = usd_brl.sort_index(ascending=False).iloc[0].values[0]
+                    dict_dividend["dividend"] = dict_dividend["dividend"] * usd_brl
+                    dict_dividend["total_dividend"] = dict_dividend["total_dividend"] * usd_brl
+
+                dividens_data_base.loc[len(dividens_data_base)] = dict_dividend
+
+    return dividens_data_base.sort_values(by="date",ignore_index=True)
+
+def plot_dividends_in_last_months(        
+        portifolio:Portfolio,
+        delta_months:int,
+        save_image:bool=False,
+    )->None:
+
+    dividens = compute_dividends(portifolio)
+    list_dates = generate_list_of_dates(delta_months,naive=False)
+
+    # Create the plot
+    fig, ax = plt.subplots()
+    # Calculate bottom positions for stacking
+    bottoms = np.zeros(delta_months)
+
+    for asset_class in dividens["class"].unique():
+        earnings_per_month = [
+                dividens[
+                    (dividens["date"] > frist_day_of_the_month) & 
+                    (dividens["date"] <= last_day_of_the_month) &
+                    (dividens["class"] == asset_class)
+                ]["total_dividend"].sum() 
+                for frist_day_of_the_month,last_day_of_the_month in zip(list_dates[:len(list_dates)-1],list_dates[1:])
+            ]
+        
+        bars = ax.bar(
+            [month_names[date.month] for date in list_dates[1:]],
+            earnings_per_month,
+            bottom = bottoms,
+            color = class_colors[asset_class],
+            label = asset_class,
+        )
+        bottoms += earnings_per_month
+
+    # Add labels and title
+    ax.set_ylabel('Earnings/Losses (BRL)')
+    ax.set_xlabel('Month')
+    ax.set_title(f'{portifolio.owner} monthly dividends in the last {delta_months} months ({pd.Timestamp.today().strftime("%y-%m-%d")})')
+    ax.legend()
+    ax.grid(True, which='both', linestyle='--', linewidth=0.5)
+
+    # Show the plot
+    if save_image:
+        plt.savefig(PATH_MAIN_FOLDER / "images" / f"dividends_{portifolio.owner}.png") 
     plt.show()
