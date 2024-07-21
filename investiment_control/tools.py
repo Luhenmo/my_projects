@@ -4,10 +4,15 @@ import pandas as pd
 import numpy as np
 import yfinance as yf
 import requests
+from pathlib import Path
+from classes import Portfolio
 from asset_database import DICT_ASSET_INFO
 from historico_tesouro.tresury_history import DICT_TRESURY_HISTORY
+# import investiment_control
 
 dict_asset = DICT_ASSET_INFO
+PATH_MAIN_FOLDER = Path("c:/Users/luizh/Documentos/visual_studio/my_projects/investiment_control")
+
 
 def get_bond_value(
     bond_name:str,
@@ -139,16 +144,24 @@ def compute_position(
 
     return position,old_assets
 
-def plot_actual_postion(position)->None:
+def plot_position(
+        portifolio:Portfolio,
+        date:pd.Timestamp,
+        save_image:bool=False,
+    )->None:
 
     def generate_colors(base_color, num_assets):
         cmap = plt.get_cmap(base_color)
         return [cmap((2*num_assets-i) / (3*num_assets)) for i in range(num_assets)]
 
+    def label_with_revenue(class_value, total_value, title):
+        pct = int(np.round(class_value/total_value*100))
+        return f"{title}\nR${int(class_value)}\n({pct:.1f}%)"
+
     def autopct_with_revenue(pct, allvalues):
         absolute = int(np.round(pct/100.*np.sum(allvalues)))
         return f"R${absolute}\n({pct:.1f}%)"
-
+    
     # Adjust the position of each percentage text
     def change_label_radial_distance(list_distances,text_to_modify,wedges):
         for i, text in enumerate(text_to_modify):
@@ -156,6 +169,8 @@ def plot_actual_postion(position)->None:
             x = list_distances[i%len(list_distances)] * np.cos(np.deg2rad(angle))
             y = list_distances[i%len(list_distances)] * np.sin(np.deg2rad(angle))
             text.set_position((x, y))
+
+    position,old = compute_position(portifolio.data_base,date)
 
     # Define color maps for each class
     class_colors = {
@@ -180,7 +195,7 @@ def plot_actual_postion(position)->None:
     pct_distances = [0.9,0.70]
     width_chart_1 = 0.4
 
-    fig, ax = plt.subplots(figsize=(12,8))
+    fig, ax = plt.subplots(figsize=(8,9))
     wedges, texts, autotexts = ax.pie(
         position["Price per unit"]*position["Amount"], 
         labels=position["Ticker"], 
@@ -191,33 +206,41 @@ def plot_actual_postion(position)->None:
         wedgeprops=dict(width=width_chart_1, edgecolor='w'),
     )
 
-    # List of pctdistance values for individual control
-
     change_label_radial_distance(pct_distances,autotexts,wedges)
 
-    label_distance = 0.33
-    pct_distance = 0.77
+    label_distance = 0.43
     width_chart_2 = 0.3
     
-    wedges_2, texts_2, autotexts_2 = ax.pie(
-        [
-            position[position["Class"] == classe]["Total price"].sum() 
-            for classe in unique_classes
-        ],
+    wedges_2, texts_2 = ax.pie(
+        [position[position["Class"] == classe]["Total price"].sum() 
+            for classe in unique_classes],
         startangle=90,
         radius=1-width_chart_1, 
         colors=[plt.get_cmap(class_colors[classe])(0.55) for classe in unique_classes],
         wedgeprops=dict(width=width_chart_2, edgecolor='w'),
-        autopct=lambda pct: autopct_with_revenue(pct, position["Total price"]),
-        labels=unique_classes,
-        pctdistance=pct_distance,
+        labels=[
+            label_with_revenue(position[position["Class"] == classe]["Total price"].sum()
+            ,position["Total price"].sum(), classe) for classe in unique_classes],
+        textprops = {'ha': 'center','va': 'center'}
     )
 
-    # Adjust the position of each percentage text
     change_label_radial_distance([label_distance],texts_2,wedges_2)
 
-    ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
-    plt.title('Assets distribution')
+    ax.axis('equal')
+    ax.set_title(f'{portifolio.owner} assets in {date.strftime("%d/%m/%y")}',ha='center',va='bottom',fontweight='bold',bbox=dict(boxstyle="round",ec=("gray", 0.5),fc=("gray", 0.3)))
+
+    ax.text(
+    0.05, 1, f'Payed price\nR${np.round(position["Total cost"].sum(),2)}', transform=plt.gca().transAxes,
+    fontsize=12, fontweight='bold', ha='center',va='center', bbox=dict(boxstyle="round",fc=("tab:blue", 0.5),ec=("tab:blue", 1))
+    )
+
+    ax.text(
+        0.95,1, f'actual price\nR${np.round(position["Total price"].sum(),2)}', transform=plt.gca().transAxes,
+        fontsize=12, fontweight='bold', ha='center',va='center', bbox=dict(boxstyle="round",fc=("tab:red", 0.5),ec=("tab:red", 1))
+    )
+
+    if save_image:
+        plt.savefig(PATH_MAIN_FOLDER / "images" / f"position_{portifolio.owner}_{date.strftime("%y-%m-%d")}.png") 
     plt.show()
 
 def plot_earnings_in_last_months(

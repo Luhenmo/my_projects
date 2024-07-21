@@ -10,6 +10,7 @@ class AssetInfo:
     bond:bool=False
 
 DICT_ASSET_INFO = { 
+'RAIZ4':AssetInfo(name="RAIZ", ticker="RAIZ4.SA", asset_class="Ação", stock_b3=True),
 'SLCE3':AssetInfo(name="SLCE", ticker="SLCE3.SA", asset_class="Ação", stock_b3=True),
 'SUZB3':AssetInfo(name="SUZB", ticker="SUZB3.SA", asset_class="Ação", stock_b3=True),
 'BBAS3':AssetInfo(name="BBAS", ticker="BBAS3.SA", asset_class="Ação", stock_b3=True),
@@ -37,10 +38,11 @@ DICT_ASSET_INFO = {
 'RBRR11':AssetInfo(name="RBRR", ticker="RBRR11.SA",asset_class="FII", stock_b3=True),
 'ALUG11':AssetInfo(name="ALUG", ticker="ALUG11.SA",asset_class="USD", stock_b3=True),
 'KORE11':AssetInfo(name="KORE", ticker="KORE11.SA",asset_class="FII", stock_b3=True),
+'PATL11':AssetInfo(name="PATL", ticker="PATL11.SA",asset_class="FII", stock_b3=True),
 'HGRE11':AssetInfo(name="HGRE", ticker="HGRE11.SA",asset_class="FII", stock_b3=True),
 'RBVA11':AssetInfo(name="RBVA", ticker="RBVA11.SA",asset_class="FII", stock_b3=True),
 'KNCA11':AssetInfo(name="KNCA", ticker="KNCA11.SA",asset_class="FII", stock_b3=True),
-'BTCR11':AssetInfo(name="BTCR", ticker="BTCI11.SA",asset_class="FII", stock_b3=True),
+'BTCI11':AssetInfo(name="BTCR", ticker="BTCI11.SA",asset_class="FII", stock_b3=True),
 'JSRE11':AssetInfo(name="JSRE", ticker="JSRE11.SA",asset_class="FII", stock_b3=True),
 'CVBI11':AssetInfo(name="CVBI", ticker="CVBI11.SA",asset_class="FII", stock_b3=True),
 'BCRI11':AssetInfo(name="BCRI", ticker="BCRI11.SA",asset_class="FII", stock_b3=True),
