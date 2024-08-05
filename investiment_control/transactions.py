@@ -2,10 +2,10 @@ import pandas as pd
 from pathlib import Path
 from datetime import datetime
 
+PATH_MAIN_FOLDER = Path("c:/Users/luizh/Documentos/visual_studio/my_projects/investiment_control")
 
-current_path = Path.cwd()
 csv_name = "investimentos_movimentacoes.csv"
-raw_data = pd.read_csv(filepath_or_buffer=current_path/csv_name)
+raw_data = pd.read_csv(filepath_or_buffer=PATH_MAIN_FOLDER/csv_name)
 list_to_pop = ["Lucro","Imposto","Observação","F sup","Preço médio","Valor total"]
 for name in list_to_pop:
     raw_data.pop(name)

@@ -167,18 +167,19 @@ def compute_position(
         "Price per unit":[get_value(ticker,date) for ticker in _assets_in_old_assets],
     })
 
-    position["Total cost"] = position["Cost per unit"] * position["Amount"]
-    position["Total price"] = position["Price per unit"] * position["Amount"]
+    position["Total cost"] = np.round(position["Cost per unit"] * position["Amount"],2)
+    position["Total price"] = np.round(position["Price per unit"] * position["Amount"],2)
     
     position = position.sort_values(by=["Class","Total price"],ascending=[True,False])
     old_assets = old_assets.sort_values("Class")
 
     return position,old_assets
 
-def plot_position(
+def plot_position_graph(
         portifolio:Portfolio,
-        date:pd.Timestamp,
+        date:pd.Timestamp=pd.Timestamp.today(),
         save_image:bool=False,
+        plot_image:bool=True,
     )->None:
 
     def generate_colors(base_color, num_assets):
@@ -272,12 +273,53 @@ def plot_position(
 
     if save_image:
         plt.savefig(PATH_MAIN_FOLDER / "images" / f"position_{portifolio.owner}_{date.strftime("%y-%m-%d")}.png") 
-    plt.show()
+    if plot_image:
+        plt.show()
+
+def plot_position_table(
+        portifolio:Portfolio,
+        date:pd.Timestamp = pd.Timestamp.today(),
+        save_image:bool=False,
+        plot_image:bool=True,
+    )->None:
+
+    actual,past = compute_position(portifolio.data_base,date=date)      
+    # Calculate the Absolute Difference and Percentage Difference
+    actual['Difference'] = np.round(actual["Total price"] - actual['Total cost'],2)
+    actual['Percentage'] = np.round((actual['Difference'] / actual['Total cost']) * 100,2)
+
+    # Create the plot
+    fig, ax = plt.subplots(figsize=(6, 7)) # Adjust the size as needed
+    ax.axis('off')
+
+    # Create the table
+    ax.text
+    table = ax.table(
+        cellText=actual.drop(["Class", "Amount","Cost per unit","Price per unit"],axis=1).values,
+        colLabels=["Nome","Custo","Preço","Lucro","Porcentagem"],
+        cellLoc='center',
+        loc=(0.5,0)
+    )
+
+    # Apply the color function to the percentage difference column
+    for i, percentage in enumerate(actual['Percentage']):
+        table[(i+1, 4)].set_text_props(color='green' if percentage > 0 else 'red')
+
+    ax.text(
+        0.5, 1, f'Posição em {date.strftime("%d/%m/%y")}', transform=plt.gca().transAxes,
+        fontsize=12, fontweight='bold', ha='center',va='center', bbox=dict(boxstyle="round",fc=("tab:blue", 0.5),ec=("tab:blue", 1))
+    )
+
+    if save_image:
+        plt.savefig(PATH_MAIN_FOLDER / "images" / f"table_{portifolio.owner}_{date.strftime("%y-%m-%d")}.png") 
+    if plot_image:
+        plt.show()
 
 def plot_earnings_in_last_months(
         portifolio:Portfolio,
         delta_months:int,
         save_image:bool=False,
+        plot_image:bool=True,
     )->None:
 
     data_base = portifolio.data_base
@@ -333,8 +375,9 @@ def plot_earnings_in_last_months(
 
     # Show the plot
     if save_image:
-        plt.savefig(PATH_MAIN_FOLDER / "images" / f"earning_{portifolio.owner}_{pd.Timestamp.today().strftime("%y-%m-%d")}.png") 
-    plt.show()
+        plt.savefig(PATH_MAIN_FOLDER / "images" / f"earning_{portifolio.owner}.png") 
+    if plot_image:
+        plt.show()
 
 def compute_dividends(
         portifolio:Portfolio,
@@ -380,6 +423,7 @@ def plot_dividends_in_last_months(
         portifolio:Portfolio,
         delta_months:int,
         save_image:bool=False,
+        plot_image:bool=True,
     )->None:
 
     dividens = compute_dividends(portifolio)
@@ -418,5 +462,6 @@ def plot_dividends_in_last_months(
 
     # Show the plot
     if save_image:
-        plt.savefig(PATH_MAIN_FOLDER / "images" / f"dividends_{portifolio.owner}.png") 
-    plt.show()
+        plt.savefig(PATH_MAIN_FOLDER / "images" / f"dividends_{portifolio.owner}.png")
+    if plot_image:
+        plt.show()
