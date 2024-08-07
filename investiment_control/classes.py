@@ -12,17 +12,24 @@ class Portfolio:
     def __post_init__(self):
         self.data_base["class"] = [DICT_ASSET_INFO[ticker].asset_class for ticker in self.data_base["ticker"]]
 
-
-##### unused #####
-@dataclass
 class Transaction:
-    owner:str
-    date:pd.Timestamp
-    ticker:str
-    buy:bool
-    price:float
-    amount:int
-    curency:str="BRL"
+    def __init__(
+            self,
+            owner:str,
+            date:pd.Timestamp,
+            ticker:list[str],
+            buy:list[bool],
+            price:list[float],
+            amount:list[int],
+            curency:list[str]=["BRL"],
+        )->None:
+        self.owner=owner
+        self.date=date
+        self.ticker=ticker
+        self.buy=buy
+        self.price=price
+        self.amount=amount
+        self.curency=curency
 
 
 

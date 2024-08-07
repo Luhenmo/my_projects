@@ -5,7 +5,7 @@ import numpy as np
 import yfinance as yf
 import requests
 from pathlib import Path
-from classes import Portfolio
+from classes import Portfolio,Transaction
 from asset_database import DICT_ASSET_INFO
 from historico_tesouro.tresury_history import DICT_TRESURY_HISTORY
 # import investiment_control
@@ -465,3 +465,24 @@ def plot_dividends_in_last_months(
         plt.savefig(PATH_MAIN_FOLDER / "images" / f"dividends_{portifolio.owner}.png")
     if plot_image:
         plt.show()
+
+def add_transaction(
+        data_base:pd.DataFrame,
+        transaction:Transaction,
+    )->pd.DataFrame:
+
+    n_transactions = len(transaction.ticker)
+
+    new_data = pd.DataFrame({
+        'owner': n_transactions*[transaction.owner],
+        'date': n_transactions*[transaction.date],
+        'ticker':transaction.ticker,
+        'buy':transaction.buy,
+        'price':transaction.price,
+        'amount':transaction.amount,
+        'curency':n_transactions*transaction.curency if len(transaction.curency) == 1 else transaction.curency
+    })
+
+    data_base = pd.concat([new_data, data_base], ignore_index=True)
+
+    return data_base

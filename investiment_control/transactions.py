@@ -1,27 +1,21 @@
+from classes import Transaction
 import pandas as pd
-from pathlib import Path
-from datetime import datetime
 
-PATH_MAIN_FOLDER = Path("c:/Users/luizh/Documentos/visual_studio/my_projects/investiment_control")
-
-csv_name = "investimentos_movimentacoes.csv"
-raw_data = pd.read_csv(filepath_or_buffer=PATH_MAIN_FOLDER/csv_name)
-list_to_pop = ["Lucro","Imposto","Observação","F sup","Preço médio","Valor total"]
-for name in list_to_pop:
-    raw_data.pop(name)
-
-data_base = pd.DataFrame()
-data_base["owner"] = raw_data["Banco"].apply(lambda text: "Luiz" if text =="Inter" else "Luciane")
-data_base["date"] = raw_data["Data operação"].apply(lambda date: datetime.strptime(date,"%d/%m/%Y"))
-data_base["ticker"] = raw_data["Nome ativo"]
-data_base["buy"] = raw_data["C/V"].apply(lambda text: True if text=="C" else False)
-data_base["price"] = raw_data["Preço operação"].apply(lambda price_text: float(''.join(filter(lambda x: x.isdigit() or x in ',', price_text)).replace(",",".")))
-data_base["amount"] = raw_data["Qnt"].apply(lambda Qnt: float(Qnt.replace(",",".")))
-data_base["curency"] = "BRL"
-
-#### Add more ransactions using 
-
-
-####
-
-GLOBAL_DATA_BASE = data_base
+LIST_TRANSACTIONS = [
+    Transaction(
+        owner="Luiz",
+        date=pd.Timestamp(2024,8,7),
+        ticker=["ITSA4","RAIZ4","BBAS3","CSMG3","ICRI11","HGRE11"],
+        buy=[True,True,True,True,True,True],
+        price=[9.96,3.06,26.43,21.79,97.19,113.84],
+        amount=[19,66,8,14,9,8],
+    ),
+    Transaction(
+        owner="Luciane",
+        date=pd.Timestamp(2024,8,7),
+        ticker=["TRXF11","HGLG11","ALZR11","KNSC11","HSML11","HGRU11","KNIP11","HGRE11","ICRI11"],
+        buy=[False,False,False,False,False,True,True,True,True],
+        price=[105.08,160.10,108.20,9.17,95.50,127.02,94.30,113.70,96.92],
+        amount=[17,9,18,218,20,16,21,18,21],
+    ),    
+]

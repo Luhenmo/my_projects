@@ -1,6 +1,6 @@
 import pandas as pd
 from classes import Portfolio
-from transactions import GLOBAL_DATA_BASE
+from data_base import GLOBAL_DATA_BASE
 from dateutil.relativedelta import relativedelta
 from tools import plot_position_table,plot_position_graph,plot_earnings_in_last_months,plot_dividends_in_last_months
 
