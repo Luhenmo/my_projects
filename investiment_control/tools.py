@@ -295,15 +295,15 @@ def plot_position_table(
     # Create the table
     ax.text
     table = ax.table(
-        cellText=actual.drop(["Class", "Amount","Cost per unit","Price per unit"],axis=1).values,
-        colLabels=["Nome","Custo","Preço","Lucro","Porcentagem"],
+        cellText=actual.drop(["Class", "Cost per unit","Price per unit"],axis=1).values,
+        colLabels=["Nome","Qnt","Custo","Preço","Lucro","Porcentagem"],
         cellLoc='center',
         loc=(0.5,0)
     )
 
     # Apply the color function to the percentage difference column
     for i, percentage in enumerate(actual['Percentage']):
-        table[(i+1, 4)].set_text_props(color='green' if percentage > 0 else 'red')
+        table[(i+1, 5)].set_text_props(color='green' if percentage > 0 else 'red')
 
     ax.text(
         0.5, 1, f'Posição em {date.strftime("%d/%m/%y")}', transform=plt.gca().transAxes,
