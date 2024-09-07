@@ -10,6 +10,7 @@ class AssetInfo:
     bond:bool=False
 
 DICT_ASSET_INFO = { 
+'CSMG3':AssetInfo(name="CSMG", ticker="CSMG3.SA", asset_class="Ação", stock_b3=True),
 'RAIZ4':AssetInfo(name="RAIZ", ticker="RAIZ4.SA", asset_class="Ação", stock_b3=True),
 'SLCE3':AssetInfo(name="SLCE", ticker="SLCE3.SA", asset_class="Ação", stock_b3=True),
 'SUZB3':AssetInfo(name="SUZB", ticker="SUZB3.SA", asset_class="Ação", stock_b3=True),
@@ -49,6 +50,8 @@ DICT_ASSET_INFO = {
 'GGRC11':AssetInfo(name="GGRC", ticker="GGRC11.SA",asset_class="FII", stock_b3=True),
 'HGCR11':AssetInfo(name="HGCR", ticker="HGCR11.SA",asset_class="FII", stock_b3=True),
 'KNCR11':AssetInfo(name="KNCR", ticker="KNCR11.SA",asset_class="FII", stock_b3=True),
+'ICRI11':AssetInfo(name="ICRI", ticker="ICRI11.SA",asset_class="FII", stock_b3=True),
+'AFHI11':AssetInfo(name="AFHI", ticker="AFHI11.SA",asset_class="FII", stock_b3=True),
 'SPXI11':AssetInfo(name="SPXI", ticker="SPXI11.SA",asset_class="USD", stock_b3=True),
 'BITH11':AssetInfo(name="BITH", ticker="BITH11.SA",asset_class="USD", stock_b3=True),
 'USDB11':AssetInfo(name="USDB", ticker="USDB11.SA",asset_class="USD", stock_b3=True),
@@ -64,3 +67,8 @@ DICT_ASSET_INFO = {
 'SHY':AssetInfo(name="SHY", ticker="SHY", asset_class="USD", stock_us=True),
 'IVV':AssetInfo(name="IVV", ticker="IVV", asset_class="USD", stock_us=True),
 }
+
+ticker=["ITSA4","RAIZ4","BBAS3","CSMG3","ICRI11","HGRE11"],
+
+
+ticker=["Selic 2029","TRXF11","HGLG11","ALZR11","KNSC11","HSML11","HGRU11","KNIP11","HGRE11","ICRI11"],

@@ -71,12 +71,17 @@ def get_b3_stock_value(
 
     earlier = date - pd.Timedelta(days=7)
     value = yf.Ticker(stock_name).history(start=earlier,end=date)[["Close"]]
-    while np.size(value) == 0:
+    num = 1
+    while (np.size(value) == 0) and (num < 4):
         date = date + pd.Timedelta(days=7)
         earlier = date - pd.Timedelta(days=7)
         value = yf.Ticker(stock_name).history(start=earlier,end=date)[["Close"]]
-    value = value.sort_index(ascending=False).iloc[0].values[0]
-    return np.round(value,2)
+        num += 1
+    if num == 4:
+        return None
+    else:
+        value = value.sort_index(ascending=False).iloc[0].values[0]
+        return np.round(value,2)
 
 def get_us_stock_value(
         stock_name:str,
