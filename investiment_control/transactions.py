@@ -4,6 +4,39 @@ import pandas as pd
 LIST_TRANSACTIONS = [
     Transaction(
         owner="Luiz",
+        date=pd.Timestamp(2024,11,19),
+        ticker=["IPCA+ 2045"],
+        buy=[True,True,True,False],
+        price=[1166.94],
+        amount=[0.60],
+    ),
+    Transaction(
+        owner="Luiz",
+        date=pd.Timestamp(2024,10,24),
+        ticker=["HGLG11","HGRE11","IPCA+ 2045","LFTS11"],
+        buy=[True,True,True,False],
+        price=[154,103.27,1154.58,124.99],
+        amount=[6,1,0.87,8],
+    ),
+    Transaction(
+        owner="Luiz",
+        date=pd.Timestamp(2024,9,13),
+        ticker=["IBIT","BIL"],
+        buy=[True,True],
+        price=[33.84,91.62],
+        amount=[4,2],
+        curency="USD"
+    ),
+    Transaction(
+        owner="Luciane",
+        date=pd.Timestamp(2024,9,11),
+        ticker=["BITH11","VALE3","LFTS11","SPXI11","ALUG11"],
+        buy=[True,True,False,False,False],
+        price=[75,57.39,123.46,336.42,44.79],
+        amount=[3,12,16,4,20],
+    ), 
+    Transaction(
+        owner="Luiz",
         date=pd.Timestamp(2024,8,20),
         ticker=["CSMG3","GGBR4","VALE3","AFHI11"],
         buy=[True,True,True,True],

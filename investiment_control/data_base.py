@@ -4,7 +4,7 @@ from datetime import datetime
 from tools import add_transaction
 from transactions import LIST_TRANSACTIONS
 
-PATH_MAIN_FOLDER = Path("c:/Users/luizh/Documentos/visual_studio/my_projects/investiment_control")
+PATH_MAIN_FOLDER = Path("c:/Users/luizh/Documents/visual_studio/my_projects/investiment_control")
 
 csv_name = "investimentos_movimentacoes.csv"
 raw_data = pd.read_csv(filepath_or_buffer=PATH_MAIN_FOLDER/csv_name)
