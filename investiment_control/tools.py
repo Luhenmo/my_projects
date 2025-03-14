@@ -154,7 +154,6 @@ def compute_position(
     _mask_old_assets = [0 == get_position(filtered_data_base,ticker,date)[1] for ticker in filtered_data_base["ticker"].unique()]
 
     _assets_in_actual_position = filtered_data_base["ticker"].unique()[_mask_actual_position]
-    _assets_in_old_assets = filtered_data_base["ticker"].unique()[_mask_old_assets]
 
     position = pd.DataFrame({
         "Ticker":[DICT_ASSET_INFO[ticker].name for ticker in _assets_in_actual_position],
@@ -164,21 +163,25 @@ def compute_position(
         "Price per unit":[get_value(ticker,date) for ticker in _assets_in_actual_position],
     })
 
-    old_assets = pd.DataFrame({
-        "Ticker":[DICT_ASSET_INFO[ticker].name for ticker in _assets_in_old_assets],
-        "Class":[DICT_ASSET_INFO[ticker].asset_class for ticker in _assets_in_old_assets],
-        "Amount":[get_position(filtered_data_base,ticker,date)[1] for ticker in _assets_in_old_assets],
-        "Cost per unit":[get_position(filtered_data_base,ticker,date)[0] for ticker in _assets_in_old_assets],
-        "Price per unit":[get_value(ticker,date) for ticker in _assets_in_old_assets],
-    })
+    ### Legacy code used to compute old assets, I dont find usefull uses and Cielo have a problem with it.
+
+    # _assets_in_old_assets = filtered_data_base["ticker"].unique()[_mask_old_assets]
+
+    # old_assets = pd.DataFrame({
+    #     "Ticker":[DICT_ASSET_INFO[ticker].name for ticker in _assets_in_old_assets],
+    #     "Class":[DICT_ASSET_INFO[ticker].asset_class for ticker in _assets_in_old_assets],
+    #     "Amount":[get_position(filtered_data_base,ticker,date)[1] for ticker in _assets_in_old_assets],
+    #     "Cost per unit":[get_position(filtered_data_base,ticker,date)[0] for ticker in _assets_in_old_assets],
+    #     "Price per unit":[get_value(ticker,date) for ticker in _assets_in_old_assets],
+    # })
+    # old_assets = old_assets.sort_values("Class")
 
     position["Total cost"] = np.round(position["Cost per unit"] * position["Amount"],2)
     position["Total price"] = np.round(position["Price per unit"] * position["Amount"],2)
     
     position = position.sort_values(by=["Class","Total price"],ascending=[True,False])
-    old_assets = old_assets.sort_values("Class")
 
-    return position,old_assets
+    return position #,old_assets
 
 def plot_position_graph(
         portifolio:Portfolio,
@@ -207,7 +210,7 @@ def plot_position_graph(
             y = list_distances[i%len(list_distances)] * np.sin(np.deg2rad(angle))
             text.set_position((x, y))
 
-    position,old = compute_position(portifolio.data_base,date)
+    position = compute_position(portifolio.data_base,date)
 
     # Define color maps for each class
     class_colors = {
@@ -239,7 +242,7 @@ def plot_position_graph(
         colors=store_colors, 
         autopct=lambda pct: autopct_with_revenue(pct, position["Total price"]), 
         startangle=90,
-        pctdistance=0.9,
+        # pctdistance=0.9,
         wedgeprops=dict(width=width_chart_1, edgecolor='w'),
     )
 
@@ -272,7 +275,7 @@ def plot_position_graph(
     )
 
     ax.text(
-        0.95,1, f'actual price\nR${np.round(position["Total price"].sum(),2)}', transform=plt.gca().transAxes,
+        0.95,1, f'Actual price\nR${np.round(position["Total price"].sum(),2)}', transform=plt.gca().transAxes,
         fontsize=12, fontweight='bold', ha='center',va='center', bbox=dict(boxstyle="round",fc=("tab:red", 0.5),ec=("tab:red", 1))
     )
 
@@ -288,7 +291,7 @@ def plot_position_table(
         plot_image:bool=True,
     )->None:
 
-    actual,past = compute_position(portifolio.data_base,date=date)      
+    actual = compute_position(portifolio.data_base,date=date)      
     # Calculate the Absolute Difference and Percentage Difference
     actual['Difference'] = np.round(actual["Total price"] - actual['Total cost'],2)
     actual['Percentage'] = np.round((actual['Difference'] / actual['Total cost']) * 100,2)

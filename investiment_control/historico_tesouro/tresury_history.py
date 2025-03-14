@@ -24,11 +24,12 @@ def should_download(last_update_path, threshold_hours=24):
 current_path = Path(os.path.dirname(os.path.abspath(__file__)))
 last_update_path = current_path / "last_update.txt"
 
-years = [2023,2024]
+years = [2025]#[2023,2024,2025]
 
 bond_names = {
     "IPCA+ 2029":"NTN-B Princ 150529",
     "IPCA+ 2045":"NTN-B Princ 150545",
+    "IPCA+ 2050":"NTN-B Princ 150850",
     "Selic 2026":"LFT 010326",
     "Selic 2029":"LFT 010329",
     "Prefixado 2029":"LTN 010129",
@@ -37,6 +38,7 @@ bond_names = {
 bond_types = {
     "IPCA+ 2029":"IPCA+",
     "IPCA+ 2045":"IPCA+",
+    "IPCA+ 2050":"IPCA+",
     "Selic 2026":"Selic",
     "Selic 2029":"Selic",
     "Prefixado 2029":"Prefixado",
@@ -56,8 +58,8 @@ if update:
     update_last_download_time(last_update_path)
 
     for file_name in spread_sheet_names.values():
-        response = requests.get(f"https://cdn.tesouro.gov.br/sistemas-internos/apex/producao/sistemas/sistd/2024/{file_name}_2024.xls")
-        write_path = current_path / f"{file_name}_2024.xls"
+        response = requests.get(f"https://cdn.tesouro.gov.br/sistemas-internos/apex/producao/sistemas/sistd/2025/{file_name}_2025.xls")
+        write_path = current_path / f"{file_name}_2025.xls"
 
         with open(write_path, 'wb') as file:
             file.write(response.content)
