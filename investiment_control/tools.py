@@ -126,8 +126,18 @@ def get_position(
 
     is_first = True
     for index in operation.sort_values("date").index:
+
+        operation_date = operation["date"][index]
+        earlier = operation_date - pd.Timedelta(days=7)
+        currency_multiplier = 1
+
+        if operation["curency"][index] == "USD":
+            usd_brl = yf.Ticker("BRL%3DX").history(start=earlier,end=operation_date)[["Close"]]
+            usd_brl = usd_brl.sort_index(ascending=False).iloc[0].values[0]
+            currency_multiplier = usd_brl
+        
         if is_first:
-            medium_price = operation["price"][index]
+            medium_price = operation["price"][index] * currency_multiplier
             amount = operation["amount"][index]
             profit = 0
 
@@ -135,11 +145,11 @@ def get_position(
         else:
             if operation["buy"][index]:
 
-                medium_price = (medium_price * amount + operation["price"][index] * operation["amount"][index])/(amount + operation["amount"][index])
+                medium_price = (medium_price * amount + operation["price"][index] * operation["amount"][index] * currency_multiplier)/(amount + operation["amount"][index])
                 amount += operation["amount"][index]
             else:
                 amount -= operation["amount"][index]            
-                profit += (operation["price"][index] - medium_price) * operation["price"][index]
+                profit += (operation["price"][index] * currency_multiplier - medium_price) * operation["amount"][index]
 
     return medium_price,np.round(amount,2),profit
 
@@ -300,6 +310,11 @@ def plot_position_table(
     fig, ax = plt.subplots(figsize=(6, 7)) # Adjust the size as needed
     ax.axis('off')
 
+    ax.text(
+        0.5, 1, f'Posição em {date.strftime("%d/%m/%y")}', transform=plt.gca().transAxes,
+        fontsize=12, fontweight='bold', ha='center',va='center', bbox=dict(boxstyle="round",fc=("tab:blue", 0.5),ec=("tab:blue", 1))
+    )
+
     # Create the table
     ax.text
     table = ax.table(
@@ -313,10 +328,6 @@ def plot_position_table(
     for i, percentage in enumerate(actual['Percentage']):
         table[(i+1, 5)].set_text_props(color='green' if percentage > 0 else 'red')
 
-    ax.text(
-        0.5, 1, f'Posição em {date.strftime("%d/%m/%y")}', transform=plt.gca().transAxes,
-        fontsize=12, fontweight='bold', ha='center',va='center', bbox=dict(boxstyle="round",fc=("tab:blue", 0.5),ec=("tab:blue", 1))
-    )
 
     if save_image:
         plt.savefig(PATH_MAIN_FOLDER / "images" / f"table_{portifolio.owner}_{date.strftime("%y-%m-%d")}.png") 

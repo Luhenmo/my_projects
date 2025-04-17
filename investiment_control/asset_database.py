@@ -9,7 +9,12 @@ class AssetInfo:
     stock_us:bool=False
     bond:bool=False
 
-DICT_ASSET_INFO = { 
+
+DICT_ASSET_INFO = {
+'ITUB4':AssetInfo(name="ITUB", ticker="ITUB4.SA", asset_class="Ação", stock_b3=True),
+'HYPE3':AssetInfo(name="HYPE", ticker="HYPE3.SA", asset_class="Ação", stock_b3=True),
+'ABCB4':AssetInfo(name="ABCB", ticker="ABCB4.SA", asset_class="Ação", stock_b3=True),
+'LREN3':AssetInfo(name="LREN", ticker="LREN3.SA", asset_class="Ação", stock_b3=True),
 'CSMG3':AssetInfo(name="CSMG", ticker="CSMG3.SA", asset_class="Ação", stock_b3=True),
 'RAIZ4':AssetInfo(name="RAIZ", ticker="RAIZ4.SA", asset_class="Ação", stock_b3=True),
 'SLCE3':AssetInfo(name="SLCE", ticker="SLCE3.SA", asset_class="Ação", stock_b3=True),
@@ -71,9 +76,5 @@ DICT_ASSET_INFO = {
 'TLT':AssetInfo(name="TLT", ticker="TLT", asset_class="USD", stock_us=True),
 'SHY':AssetInfo(name="SHY", ticker="SHY", asset_class="USD", stock_us=True),
 'IVV':AssetInfo(name="IVV", ticker="IVV", asset_class="USD", stock_us=True),
+'TSLA':AssetInfo(name="TSLA", ticker="TSLA", asset_class="USD", stock_us=True),
 }
-
-ticker=["ITSA4","RAIZ4","BBAS3","CSMG3","ICRI11","HGRE11"],
-
-
-ticker=["Selic 2029","TRXF11","HGLG11","ALZR11","KNSC11","HSML11","HGRU11","KNIP11","HGRE11","ICRI11"],
