@@ -21,7 +21,7 @@ data_base["price"] = raw_data["Preço operação"].apply(lambda price_text: floa
 data_base["amount"] = raw_data["Qnt"].apply(lambda Qnt: float(Qnt.replace(",",".")))
 data_base["curency"] = "BRL"
 
-for transaction in LIST_TRANSACTIONS:
+for transaction in LIST_TRANSACTIONS[::-1]:
     data_base = add_transaction(
         data_base=data_base,
         transaction=transaction,
